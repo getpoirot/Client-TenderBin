@@ -7,7 +7,10 @@ use Poirot\ApiClient\Exceptions\exHttpResponse;
 use Poirot\ApiClient\Interfaces\iPlatform;
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Interfaces\Response\iResponse;
+use Poirot\Std\ErrorStack;
 use Poirot\TenderBinClient\Client\PlatformRest\ServerUrlEndpoints;
+use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
+use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
 
 
 class PlatformRest
@@ -23,6 +26,31 @@ class PlatformRest
 
 
     // Alters
+
+    /**
+     * @param Command\Store $command
+     * @return iResponse
+     */
+    protected function _Store(Command\Store $command)
+    {
+        $headers = [];
+
+        // Request With Client Credential
+        // As Authorization Header
+        $headers['Authorization'] = 'Bearer '. ( $command->getToken()->getAccessToken() );
+
+        $args = iterator_to_array($command);
+
+        if ( is_resource($command->getContent()) ) {
+            // For now convert stream that considered file into uri and post content with curl
+            $size = stream_get_meta_data($command->getContent());
+            $args['content'] = new \CURLFile($size['uri']);
+        }
+
+        $url = $this->_getServerUrlEndpoints($command);
+        $response = $this->_sendViaCurl('POST', $url, $args, $headers);
+        return $response;
+    }
 
     /**
      * @param Command\MetaInfo $command
@@ -59,7 +87,6 @@ class PlatformRest
         (! $range ) ?: $headers['Range'] = 'byte='.implode('-', $range); // byte=0-1500
 
 
-        $url = $this->_getServerUrlEndpoints($command); $exception=null; $code=200;
         if (! empty($headers) ) {
             $h = [];
             foreach ($headers as $key => $val)
@@ -70,9 +97,21 @@ class PlatformRest
                     'header'  => $headers, ] ];
             $context = stream_context_create($opts);
         }
+
+
+        $url = $this->_getServerUrlEndpoints($command); $exception=null; $code=200;
+
+        ErrorStack::handleError( E_ALL );
         if (false === $response = $file = fopen($url, 'rb', false, $context)) {
             $code      = 400;
             $exception = new exHttpResponse('Error While Retrieve Resource', $code);
+        }
+        if ( $ex = ErrorStack::handleDone() ) {
+            // fopen(http://...): failed to open stream: HTTP request failed! HTTP/1.1 403 Forbidden
+            if ( false !== strpos($ex->getMessage(), '403 Forbidden') )
+                $exception = new exResourceForbidden;
+            if ( false !== strpos($ex->getMessage(), '404 Not Found') )
+                $exception = new exResourceNotFound();
         }
 
         $response = new Response(
@@ -157,14 +196,25 @@ class PlatformRest
         ];
 
         if ($method == 'POST') {
-            $defHeaders += [
+            // TODO issue when data is php array
+            /*$defHeaders += [
                 'Content-Type: application/x-www-form-urlencoded'
-            ];
+            ];*/
 
             curl_setopt($handle, CURLOPT_POST, true);
             # build request body
-            $urlEncodeData = http_build_query($data);
-            curl_setopt($handle, CURLOPT_POSTFIELDS, $urlEncodeData);
+            foreach ($data as $k => $d) {
+                // Build PHP Array Request Params Compatible With Curl
+                // meta => ['name' => (string)] ---> meta['name'] = (string)
+                if (is_array($d)) {
+                    foreach ($d as $i => $v)
+                        $data[$k.'['.$i.']'] = $v;
+
+                    unset($data[$k]);
+                }
+            }
+
+            curl_setopt($handle, CURLOPT_POSTFIELDS, $data);
 
         } elseif ($method == 'GET') {
             $urlEncodeData = http_build_query($data);
@@ -223,5 +273,10 @@ class PlatformRest
         );
 
         return (string) $url;
+    }
+
+    protected function _handleError($e)
+    {
+
     }
 }

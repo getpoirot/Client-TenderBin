@@ -4,7 +4,9 @@ namespace Poirot\TenderBinClient\Client;
 use Poirot\ApiClient\Exceptions\exHttpResponse;
 use Poirot\ApiClient\Response\ExpectedJson;
 use Poirot\ApiClient\ResponseOfClient;
+use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
+use Poirot\TenderBinClient\Exceptions\exUnexpectedValue;
 
 
 class Response
@@ -20,10 +22,16 @@ class Response
         if ($this->exception instanceof exHttpResponse) {
             // Determine Known Errors ...
             $expected = $this->expected();
-            if ($err =  $expected->get('error') ) {
+            if ($expected && $err =  $expected->get('error') ) {
                 switch ($err['state']) {
                     case 'exResourceNotFound':
                         $this->exception = new exResourceNotFound($err['message'], (int) $err['code']);
+                        break;
+                    case 'exAccessDenied':
+                        $this->exception = new exResourceForbidden($err['message'], (int) $err['code']);
+                        break;
+                    case 'exUnexpectedValue':
+                        $this->exception = new exUnexpectedValue($err['message'], (int) $err['code']);
                         break;
                 }
             }

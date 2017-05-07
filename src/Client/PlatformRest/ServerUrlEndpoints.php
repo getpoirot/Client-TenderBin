@@ -47,6 +47,7 @@ class ServerUrlEndpoints
 
         $cmMethod = strtolower( (string) $command );
         switch ($cmMethod) {
+            case 'store':
             case 'fetch':
                 /** @var Fetch $command */
                 $params = iterator_to_array($command);

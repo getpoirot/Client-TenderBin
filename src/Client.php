@@ -7,6 +7,7 @@ use Poirot\ApiClient\aClient;
 use Poirot\ApiClient\Interfaces\iPlatform;
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\TenderBinClient\Client\PlatformRest;
+use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
 use Poirot\TenderBinClient\Exceptions\exTokenMismatch;
 
@@ -49,6 +50,48 @@ class Client
         $this->tokenProvider = $tokenProvider;
     }
 
+    /**
+     * Store Bin Data In Storage
+     *
+     * [code:]
+     * $r = $c->store(
+     *  serialize($c)
+     *  , 'application/php-serialized'
+     *  , 'TenderBin Client'
+     *  , [
+     *  'is_file' => true, // force store as a file
+     *  ]
+     * );
+     * [/code]
+     *
+     * @param string|resource $content
+     * @param string          $content_type
+     * @param string          $title
+     * @param array           $meta
+     * @param bool            $protected
+     * @param \DateTime       $expiration
+     *
+     * @return array
+     */
+    function store(
+        $content
+        , $content_type = null
+        , $title = null
+        , array $meta = []
+        , $protected = true
+        , \DateTime $expiration = null
+    ) {
+        $response = $this->call(
+            new Command\Store($content, $content_type, $title, $meta, $protected, $expiration)
+        );
+
+        if ( $ex = $response->hasException() )
+            throw $ex;
+
+        $r = $response->expected();
+        $r = $r->get('result');
+        return $r;
+    }
 
     /**
      * Returns metadata about a single bin.
@@ -56,7 +99,7 @@ class Client
      * @param string $resourceHash
      *
      * @return array
-     * @throws exResourceNotFound
+     * @throws exResourceNotFound|exResourceForbidden
      */
     function getBinMeta($resourceHash)
     {
@@ -86,8 +129,9 @@ class Client
      * @param int    $rangeTo      If RangeFrom Not Given Load x byte From End
      *
      * @return array [ headers[], resource ]
+     * @throws exResourceNotFound|exResourceForbidden
      */
-    function loadBin($resourceHash, $rangeFrom, $rangeTo)
+    function loadBin($resourceHash, $rangeFrom = null, $rangeTo = null)
     {
         $metaInfo = $this->getBinMeta($resourceHash);
         $resource = $this->fetch($resourceHash, $rangeFrom, $rangeTo);
@@ -111,8 +155,9 @@ class Client
      * @param int    $rangeTo      If RangeFrom Not Given Load x byte From End
      *
      * @return array [ headers[], resource ]
+     * @throws exResourceNotFound|exResourceForbidden
      */
-    function fetch($resourceHash, $rangeFrom, $rangeTo)
+    function fetch($resourceHash, $rangeFrom = null, $rangeTo = null)
     {
         $response = $this->call( new Command\Fetch($resourceHash, $rangeFrom, $rangeTo) );
         if ( $ex = $response->hasException() )
