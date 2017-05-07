@@ -196,7 +196,6 @@ class PlatformRest
         ];
 
         if ($method == 'POST') {
-            // TODO issue when data is php array
             /*$defHeaders += [
                 'Content-Type: application/x-www-form-urlencoded'
             ];*/
