@@ -5,7 +5,7 @@ use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Request\tCommandHelper;
 
 
-class MetaInfo
+class Fetch
     implements iApiCommand
     , \IteratorAggregate
 {
@@ -13,17 +13,30 @@ class MetaInfo
     use tTokenAware;
 
     protected $resourceHash;
+    protected $range;
 
 
     /**
      * MetaInfo constructor.
      *
-     * @param $resourceHash
+     * @param string $resourceHash
+     * @param int    $rangeFrom
+     * @param int    $rangeTo
      */
-    function __construct($resourceHash)
+    function __construct($resourceHash, $rangeFrom = null, $rangeTo = null)
     {
         $this->resourceHash = $resourceHash;
+
+        if (isset($rangeFrom) || isset($rangeTo)) {
+            $this->range = [
+                $rangeFrom,
+                $rangeTo
+            ];
+        }
     }
+
+
+    // Options
 
     /**
      * Get ResourceHash
@@ -33,6 +46,16 @@ class MetaInfo
     function getResourceHash()
     {
         return $this->resourceHash;
+    }
+
+    /**
+     * Get Range
+     *
+     * @return array
+     */
+    function getRange()
+    {
+        return $this->range;
     }
 
 

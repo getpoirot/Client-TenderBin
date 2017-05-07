@@ -3,6 +3,8 @@ namespace Poirot\TenderBinClient\Client\PlatformRest;
 
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\OAuth2Client\Federation\Command\Recover\Validate;
+use Poirot\TenderBinClient\Client\Command\Fetch;
+use Poirot\TenderBinClient\Client\Command\MetaInfo;
 
 
 class ServerUrlEndpoints
@@ -45,25 +47,15 @@ class ServerUrlEndpoints
 
         $cmMethod = strtolower( (string) $command );
         switch ($cmMethod) {
-            case 'register':
-                $base = 'api/v1/members';
-                break;
-
-            case 'accountinfo':
-                /** @var Validate $cmMethod */
+            case 'fetch':
+                /** @var Fetch $command */
                 $params = iterator_to_array($command);
-                if (isset($params['username']))
-                    $postfix = '@'.$params['username'];
-                else
-                    $postfix = current($params);
-                $base = 'api/v1/members/profile/'.$postfix;
+                $base = $params['resource_hash'];
                 break;
-
-
-            case 'recover::resendcode':
-                /** @var Validate $cmMethod */
+            case 'metainfo':
+                /** @var MetaInfo $command */
                 $params = iterator_to_array($command);
-                $base = 'recover/validate/resend/'.$params['validation_code'].'/'.$params['identifier_type'];
+                $base = $params['resource_hash'].'/meta';
                 break;
         }
 

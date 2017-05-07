@@ -1,14 +1,22 @@
 <?php
 namespace Poirot\TenderBinClient\Client;
 
+use Poirot\ApiClient\aPlatform;
 use Poirot\ApiClient\Exceptions\exConnection;
 use Poirot\ApiClient\Exceptions\exHttpResponse;
+use Poirot\ApiClient\Interfaces\iPlatform;
+use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Interfaces\Response\iResponse;
 use Poirot\TenderBinClient\Client\PlatformRest\ServerUrlEndpoints;
 
 
 class PlatformRest
+    extends aPlatform
+    implements iPlatform
 {
+    /** @var iApiCommand */
+    protected $Command;
+
     // Options:
     protected $usingSsl  = false;
     protected $serverUrl = null;
@@ -23,7 +31,6 @@ class PlatformRest
     protected function _MetaInfo(Command\MetaInfo $command)
     {
         $headers = [];
-        $args    = iterator_to_array($command);
 
         // Request With Client Credential
         // As Authorization Header
@@ -31,10 +38,52 @@ class PlatformRest
 
 
         $url = $this->_getServerUrlEndpoints($command);
-        $response = $this->_sendViaCurl('POST', $url, $args, $headers);
+        $response = $this->_sendViaCurl('GET', $url, [], $headers);
         return $response;
     }
 
+    /**
+     * @param Command\Fetch $command
+     * @return iResponse
+     */
+    protected function _Fetch(Command\Fetch $command)
+    {
+        $range = $command->getRange();
+        $hash  = $command->getResourceHash();
+
+        $context = null;
+        $headers = [];
+        // Request With Client Credential
+        // As Authorization Header
+        $headers['Authorization'] = 'Bearer '. ( $command->getToken()->getAccessToken() );
+        (! $range ) ?: $headers['Range'] = 'byte='.implode('-', $range); // byte=0-1500
+
+
+        $url = $this->_getServerUrlEndpoints($command); $exception=null; $code=200;
+        if (! empty($headers) ) {
+            $h = [];
+            foreach ($headers as $key => $val)
+                $h[] = $key.': '.$val;
+            $headers = $h;
+
+            $opts = [ 'http' => [
+                    'header'  => $headers, ] ];
+            $context = stream_context_create($opts);
+        }
+        if (false === $response = $file = fopen($url, 'rb', false, $context)) {
+            $code      = 400;
+            $exception = new exHttpResponse('Error While Retrieve Resource', $code);
+        }
+
+        $response = new Response(
+            $response
+            , $code
+            , []
+            , $exception
+        );
+
+        return $response;
+    }
 
 
     // Options
