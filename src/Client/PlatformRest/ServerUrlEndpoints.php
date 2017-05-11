@@ -48,6 +48,10 @@ class ServerUrlEndpoints
         $cmMethod = strtolower( (string) $command );
         switch ($cmMethod) {
             case 'store':
+                /** @var Fetch $command */
+                $params = iterator_to_array($command);
+                $base = isset($params['resource_hash']) ? $params['resource_hash'] : '';
+                break;
             case 'fetch':
                 /** @var Fetch $command */
                 $params = iterator_to_array($command);
