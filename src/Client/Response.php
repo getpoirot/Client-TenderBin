@@ -7,6 +7,7 @@ use Poirot\ApiClient\ResponseOfClient;
 use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
 use Poirot\TenderBinClient\Exceptions\exUnexpectedValue;
+use Poirot\TenderBinClient\Exceptions\exTokenMismatch;
 
 
 class Response
@@ -30,6 +31,9 @@ class Response
                     case 'exAccessDenied':
                         $this->exception = new exResourceForbidden($err['message'], (int) $err['code']);
                         break;
+                    case 'exOAuthAccessDenied':
+                        $this->exception = new exTokenMismatch($err['message'], (int) $err['code']);
+                        break;    
                     case 'exUnexpectedValue':
                         $this->exception = new exUnexpectedValue($err['message'], (int) $err['code']);
                         break;
