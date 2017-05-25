@@ -54,6 +54,42 @@ class PlatformRest
     }
 
     /**
+     * @param Command\Delete $command
+     * @return iResponse
+     */
+    protected function _Delete(Command\Delete $command)
+    {
+        $headers = [];
+
+        // Request With Client Credential
+        // As Authorization Header
+        $headers['Authorization'] = 'Bearer '. ( $command->getToken()->getAccessToken() );
+
+
+        $url = $this->_getServerUrlEndpoints($command);
+        $response = $this->_sendViaCurl('DELETE', $url, [], $headers);
+        return $response;
+    }
+
+    /**
+     * @param Command\Touch $command
+     * @return iResponse
+     */
+    protected function _Touch(Command\Touch $command)
+    {
+        $headers = [];
+
+        // Request With Client Credential
+        // As Authorization Header
+        $headers['Authorization'] = 'Bearer '. ( $command->getToken()->getAccessToken() );
+
+
+        $url = $this->_getServerUrlEndpoints($command);
+        $response = $this->_sendViaCurl('PUT', $url, ['expiration' => 0], $headers);
+        return $response;
+    }
+
+    /**
      * @param Command\MetaInfo $command
      * @return iResponse
      */
@@ -196,7 +232,9 @@ class PlatformRest
             'charset: utf-8'
         ];
 
-        if ($method == 'POST') {
+        curl_setopt($handle, CURLOPT_CUSTOMREQUEST, $method);
+
+        if ($method == 'POST' || $method == 'PUT') {
             /*$defHeaders += [
                 'Content-Type: application/x-www-form-urlencoded'
             ];*/
@@ -216,9 +254,9 @@ class PlatformRest
 
             curl_setopt($handle, CURLOPT_POSTFIELDS, $data);
 
-        } elseif ($method == 'GET') {
+        } else {
             $urlEncodeData = http_build_query($data);
-            // TODO set data in query params
+            // TODO set data in qcuery params
         }
 
         $headers = array_merge(

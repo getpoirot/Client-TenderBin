@@ -3,6 +3,7 @@ namespace Poirot\TenderBinClient\Client\PlatformRest;
 
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\OAuth2Client\Federation\Command\Recover\Validate;
+use Poirot\TenderBinClient\Client\Command\Delete;
 use Poirot\TenderBinClient\Client\Command\Fetch;
 use Poirot\TenderBinClient\Client\Command\MetaInfo;
 
@@ -60,7 +61,17 @@ class ServerUrlEndpoints
             case 'metainfo':
                 /** @var MetaInfo $command */
                 $params = iterator_to_array($command);
-                $base = $params['resource_hash'].'/meta';
+                $base = $params['resource_hash'].'/_/meta';
+                break;
+            case 'delete':
+                /** @var Delete $command */
+                $params = iterator_to_array($command);
+                $base = $params['resource_hash'];
+                break;
+            case 'touch':
+                /** @var Delete $command */
+                $params = iterator_to_array($command);
+                $base = $params['resource_hash'];
                 break;
         }
 

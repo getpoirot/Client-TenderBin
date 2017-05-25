@@ -140,6 +140,40 @@ class Client
     }
 
     /**
+     * Delete Bin and All SubVersions From Storage
+     *
+     * @param string $resourceHash
+     *
+     * @return array
+     * @throws \Exception
+     */
+    function delete($resourceHash)
+    {
+        $response = $this->call( new Command\Delete($resourceHash) );
+        if ( $ex = $response->hasException() )
+            throw $ex;
+
+        return $response->expected();
+    }
+
+    /**
+     * Touch File Expiration To Infinite Time
+     *
+     * @param string $resourceHash
+     *
+     * @return array
+     * @throws \Exception
+     */
+    function touch($resourceHash)
+    {
+        $response = $this->call( new Command\Touch($resourceHash) );
+        if ( $ex = $response->hasException() )
+            throw $ex;
+
+        return $response->expected();
+    }
+
+    /**
      * Fetch BinData Content Into Local Stream
      *
      * [code:]
