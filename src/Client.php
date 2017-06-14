@@ -128,7 +128,7 @@ class Client
      * @param int    $rangeFrom
      * @param int    $rangeTo      If RangeFrom Not Given Load x byte From End
      *
-     * @return array [ headers[], resource ]
+     * @return array [ resource, headers[] ]
      * @throws exResourceNotFound|exResourceForbidden
      */
     function loadBin($resourceHash, $rangeFrom = null, $rangeTo = null)
