@@ -33,7 +33,7 @@ $resource = $c->getBinMeta('58eca65857077400155a1bd2');
 class Client
     extends aClient
 {
-    protected $baseUrl;
+    protected $serverUrl;
     protected $platform;
     protected $tokenProvider;
 
@@ -41,12 +41,12 @@ class Client
     /**
      * TenderBin Client constructor.
      *
-     * @param string         $baseUrl
+     * @param string         $serverUrl
      * @param iTokenProvider $tokenProvider
      */
-    function __construct($baseUrl, iTokenProvider $tokenProvider)
+    function __construct($serverUrl, iTokenProvider $tokenProvider)
     {
-        $this->baseUrl  = rtrim( (string) $baseUrl, '/' );
+        $this->serverUrl  = rtrim( (string) $serverUrl, '/' );
         $this->tokenProvider = $tokenProvider;
     }
 
@@ -218,7 +218,7 @@ class Client
 
 
         # Default Options Overriding
-        $this->platform->setServerUrl( $this->baseUrl );
+        $this->platform->setServerUrl( $this->serverUrl );
 
         return $this->platform;
     }
