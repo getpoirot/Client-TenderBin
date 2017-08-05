@@ -29,7 +29,7 @@ class Store
      * @param string          $title
      * @param array           $meta
      * @param bool            $protected
-     * @param null            $expiration
+     * @param int             $expiration    Timestamp
      */
     function __construct(
         $content

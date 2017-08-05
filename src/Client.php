@@ -2,11 +2,13 @@
 namespace Poirot\TenderBinClient;
 
 use Poirot\ApiClient\Interfaces\Token\iTokenProvider;
+use Poirot\Std\Interfaces\Struct\iDataEntity;
 use Poirot\TenderBinClient\Client\Command;
 use Poirot\ApiClient\aClient;
 use Poirot\ApiClient\Interfaces\iPlatform;
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\TenderBinClient\Client\PlatformRest;
+use Poirot\TenderBinClient\Client\Response;
 use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
 use Poirot\TenderBinClient\Exceptions\exTokenMismatch;
@@ -68,8 +70,8 @@ class Client
      * @param string          $content_type
      * @param string          $title
      * @param array           $meta
+     * @param int             $expiration    Timestamp
      * @param bool            $protected
-     * @param \DateTime       $expiration
      *
      * @return array
      */
@@ -78,8 +80,8 @@ class Client
         , $content_type = null
         , $title = null
         , array $meta = []
+        , $expiration = null
         , $protected = true
-        , \DateTime $expiration = null
     ) {
         $response = $this->call(
             new Command\Store($content, $content_type, $title, $meta, $protected, $expiration)
@@ -89,7 +91,7 @@ class Client
             throw $ex;
 
         $r = $response->expected();
-        $r = $r->get('result');
+        $r = ($r instanceof iDataEntity) ? $r->get('result') : $r;
         return $r;
     }
 
@@ -230,6 +232,8 @@ class Client
      * @override handle token renewal from server
      *
      * @inheritdoc
+     *
+     * @return Response
      */
     protected function call(iApiCommand $command)
     {
