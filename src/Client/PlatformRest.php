@@ -8,6 +8,7 @@ use Poirot\ApiClient\Interfaces\iPlatform;
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Interfaces\Response\iResponse;
 use Poirot\Std\ErrorStack;
+use Poirot\Std\Type\StdArray;
 use Poirot\TenderBinClient\Client\PlatformRest\ServerUrlEndpoints;
 use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
@@ -240,19 +241,10 @@ class PlatformRest
             ];*/
 
             curl_setopt($handle, CURLOPT_POST, true);
+
             # build request body
-            foreach ($data as $k => $d) {
-                // Build PHP Array Request Params Compatible With Curl
-                // meta => ['name' => (string)] ---> meta['name'] = (string)
-                if (is_array($d)) {
-                    foreach ($d as $i => $v)
-                        $data[$k.'['.$i.']'] = $v;
-
-                    unset($data[$k]);
-                }
-            }
-
-            curl_setopt($handle, CURLOPT_POSTFIELDS, $data);
+            $data = StdArray::of($data)->makeFlattenFace();
+            curl_setopt($handle, CURLOPT_POSTFIELDS, $data->value);
 
         } else {
             $urlEncodeData = http_build_query($data);
