@@ -110,7 +110,7 @@ class Client
             throw $ex;
 
         $r = $response->expected();
-        $r = $r->get('result');
+        $r = ($r instanceof iDataEntity) ? $r->get('result') : $r;
         return $r;
     }
 
