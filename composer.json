@@ -18,6 +18,7 @@
     , "autoload"  : {
         "psr-4": {
             "Poirot\\TenderBinClient\\": "src/"
+            , "Module\\TenderBinClient\\": "mod/"
         }
     }
 }
