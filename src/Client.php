@@ -32,6 +32,37 @@ $resource = $c->getBinMeta('58eca65857077400155a1bd2');
 
 */
 
+/*
+Stored Bin Data Object:
+Array
+(
+    [bindata] => Array
+        (
+            [hash] => 599ffc2fbf2bc35359595d12
+            [title] => 427575.jpg
+            [content_type] => image/jpeg
+            [expire_in] =>
+            [is_protected] =>
+            [meta] => Array
+                (
+                    [is_file] => 1
+                    [filename] => phpBroPKy
+                    [filesize] => 47570
+                    [md5] => 5bfcc2995ce730edb229feed87cb2c59
+                )
+
+            [version] => Array
+                (
+                    [subversion_of] =>
+                    [tag] => latest
+                )
+
+        )
+
+    [_link] => /599ffc2fbf2bc35359595d12/phpBroPKy
+)
+*/
+
 class Client
     extends aClient
 {
@@ -200,6 +231,22 @@ class Client
             throw $ex;
 
         return $response->expected();
+    }
+
+
+    // Options
+
+    /**
+     * Set Token Provider
+     *
+     * @param iTokenProvider $tokenProvider
+     *
+     * @return $this
+     */
+    function setTokenProvider(iTokenProvider $tokenProvider)
+    {
+        $this->tokenProvider = $tokenProvider;
+        return $this;
     }
 
 

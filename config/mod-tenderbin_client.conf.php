@@ -22,6 +22,7 @@ return [
                     'main/tenderbin/resource/get'
                     , [ 'resource_hash' => '$hash' ]
                     , Url::INSTRUCT_NOTHING | Url::ABSOLUTE_URL
+                    #, [ 'absolute_url' => ['server_url' => 'http://storage.apanaj.ir'] ]
                 );
             },
         ],

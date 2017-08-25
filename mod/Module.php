@@ -61,13 +61,13 @@ namespace Module\TenderBinClient
     }
 }
 
-namespace Module\TenderBinClient\Services
+namespace Module\TenderBinClient
 {
     use Poirot\TenderBinClient\Client;
 
     /**
      * @method static Client ClientTender()
      */
-    class IOC extends \IOC
+    class Services extends \IOC
     { }
 }
