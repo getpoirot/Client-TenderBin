@@ -301,6 +301,7 @@ class Client
             if ( $ex instanceof exTokenMismatch && $recall > 0 ) {
                 // Token revoked or mismatch
                 // Refresh Token
+                // TODO Handle Errors while retrieve token (delete cache)
                 $this->tokenProvider->exchangeToken();
                 $recall--;
 
