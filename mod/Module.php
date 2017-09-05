@@ -1,6 +1,8 @@
 <?php
 namespace Module\TenderBinClient
 {
+
+    use Poirot\Application\ModuleManager\Interfaces\iModuleManager;
     use Poirot\Std\Interfaces\Struct\iDataEntity;
     use Poirot\Application\Interfaces\Sapi;
     use Poirot\Ioc\Container;
@@ -12,6 +14,7 @@ namespace Module\TenderBinClient
 
     class Module implements Sapi\iSapiModule
         , Sapi\Module\Feature\iFeatureModuleAutoload
+        , Sapi\Module\Feature\iFeatureModuleInitModuleManager
         , Sapi\Module\Feature\iFeatureModuleMergeConfig
         , Sapi\Module\Feature\iFeatureModuleNestServices
     {
@@ -31,6 +34,24 @@ namespace Module\TenderBinClient
             /** @var LoaderAutoloadNamespace $nameSpaceLoader */
             $nameSpaceLoader = $baseAutoloader->loader($nameSpaceLoader);
             $nameSpaceLoader->addResource(__NAMESPACE__, __DIR__);
+        }
+
+        /**
+         * Initialize Module Manager
+         *
+         * priority: 1000 C
+         *
+         * @param iModuleManager $moduleManager
+         *
+         * @return void
+         */
+        function initModuleManager(iModuleManager $moduleManager)
+        {
+            // ( ! ) ORDER IS MANDATORY
+
+            if (!$moduleManager->hasLoaded('OAuth2Client'))
+                // Load OAuth2 Client To Assert Tokens.
+                $moduleManager->loadModule('OAuth2Client');
         }
 
         /**
