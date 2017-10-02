@@ -18,6 +18,15 @@ return [
         ],
         'variables' => [
             'serverUrlTenderBin' => function() {
+                // Server Url From Client TenderBin
+                $c = \Module\TenderBinClient\Services::ClientTender();
+                $serverUrl = rtrim($c->getServerUrl(), '/');
+                return $serverUrl.'/$hash';
+            },
+
+            /*
+            'serverUrlTenderBin' => function() {
+                // Server Url From Server Url
                 return \Module\HttpFoundation\Actions::url(
                     'main/tenderbin/resource/get'
                     , [ 'resource_hash' => '$hash' ]
@@ -25,6 +34,7 @@ return [
                     #, [ 'absolute_url' => ['server_url' => 'http://storage.apanaj.ir'] ]
                 );
             },
+            */
         ],
     ],
 

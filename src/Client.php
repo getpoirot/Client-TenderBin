@@ -249,6 +249,15 @@ class Client
         return $this;
     }
 
+    /**
+     * Server Url
+     *
+     * @return string
+     */
+    function getServerUrl()
+    {
+        return $this->serverUrl;
+    }
 
     // Implement aClient
 
