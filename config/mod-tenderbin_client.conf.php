@@ -11,7 +11,7 @@ return [
         'paths' => [
             // According to route name 'www-assets' to serve statics files
             // @see cor-http_foundation.routes
-            'mod-content-media_cdn' => function($args) {
+            'tenderbin-media_cdn' => function($args) {
                 $uri = $this->assemble('$serverUrlTenderBin', $args);
                 return $uri;
             },
