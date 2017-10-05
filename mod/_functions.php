@@ -99,6 +99,10 @@ namespace Poirot\TenderBinClient
             }
             */
 
+            if ($mediaData instanceof \Traversable)
+                $mediaData = iterator_to_array($mediaData);
+
+
             if (! isset($mediaData['storage_type']) )
                 $mediaData['storage_type'] = 'tenderbin';
 
