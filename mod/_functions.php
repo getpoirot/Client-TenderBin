@@ -49,6 +49,7 @@ namespace Poirot\TenderBinClient
      * @param array|\Traversable $content Content include MediaObject
      *
      * @return array Prepared content include link(s)
+     * @throws \Exception
      */
     function embedLinkToMediaData($content)
     {
@@ -56,20 +57,25 @@ namespace Poirot\TenderBinClient
             $content = StdTravers::of($content)->toArray();
 
         if (! is_array($content) )
-            return $content;
+            throw new \Exception('Medias is not an type of array.');
 
 
         $content = StdArray::of($content)->withWalk(function(&$val) {
-            if ($val instanceof MediaObjectTenderBin) {
-                $orig         = $val;
-                $val          = StdTravers::of($val)->toArray();
-                $val['_link'] = (string) \Module\Foundation\Actions::Path(
-                    'tenderbin-media_cdn' // this name is reserved; @see mod-content.conf.php
-                    , [
-                        'hash' => $orig->getHash()
-                    ]
-                );
-            }
+            if (! $val instanceof MediaObjectTenderBin )
+                throw new \Exception(sprintf(
+                    'Unknown Object Of Type (%s).'
+                    , \Poirot\Std\flatten($val)
+                ));
+
+
+            $orig         = $val;
+            $val          = StdTravers::of($val)->toArray();
+            $val['_link'] = (string) \Module\Foundation\Actions::Path(
+                'tenderbin-media_cdn' // this name is reserved; @see mod-content.conf.php
+                , [
+                    'hash' => $orig->getHash()
+                ]
+            );
         });
 
         return $content->value; // instance access to internal array
