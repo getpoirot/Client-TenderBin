@@ -61,12 +61,8 @@ namespace Poirot\TenderBinClient
 
 
         $content = StdArray::of($content)->withWalk(function(&$val) {
-            if (! $val instanceof MediaObjectTenderBin )
-                throw new \Exception(sprintf(
-                    'Unknown Object Of Type (%s).'
-                    , \Poirot\Std\flatten($val)
-                ));
-
+            if (!$val instanceof MediaObjectTenderBin )
+                return;
 
             $orig         = $val;
             $val          = StdTravers::of($val)->toArray();
