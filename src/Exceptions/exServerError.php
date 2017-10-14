@@ -1,5 +1,5 @@
 <?php
-namespace Poirot\TenderBinClient\Exception;
+namespace Poirot\TenderBinClient\Exceptions;
 
 
 class exServerError

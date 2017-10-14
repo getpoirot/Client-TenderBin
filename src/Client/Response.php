@@ -4,9 +4,9 @@ namespace Poirot\TenderBinClient\Client;
 use Poirot\ApiClient\Exceptions\exHttpResponse;
 use Poirot\ApiClient\Response\ExpectedJson;
 use Poirot\ApiClient\ResponseOfClient;
-use Poirot\TenderBinClient\Exception\exServerError;
 use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
+use Poirot\TenderBinClient\Exceptions\exServerError;
 use Poirot\TenderBinClient\Exceptions\exUnexpectedValue;
 use Poirot\TenderBinClient\Exceptions\exTokenMismatch;
 
