@@ -230,6 +230,7 @@ class Client
         if ( $ex = $response->hasException() )
             throw $ex;
 
+        // TODO fetch response
         return $response->expected();
     }
 
