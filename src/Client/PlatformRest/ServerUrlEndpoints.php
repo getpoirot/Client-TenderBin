@@ -6,6 +6,8 @@ use Poirot\OAuth2Client\Federation\Command\Recover\Validate;
 use Poirot\TenderBinClient\Client\Command\Delete;
 use Poirot\TenderBinClient\Client\Command\Fetch;
 use Poirot\TenderBinClient\Client\Command\MetaInfo;
+use Poirot\TenderBinClient\Client\Command\Store;
+use Poirot\TenderBinClient\Client\Command\Touch;
 
 
 class ServerUrlEndpoints
@@ -49,7 +51,7 @@ class ServerUrlEndpoints
         $cmMethod = strtolower( (string) $command );
         switch ($cmMethod) {
             case 'store':
-                /** @var Fetch $command */
+                /** @var Store $command */
                 $params = iterator_to_array($command);
                 $base = isset($params['resource_hash']) ? $params['resource_hash'] : '';
                 break;
@@ -69,9 +71,9 @@ class ServerUrlEndpoints
                 $base = $params['resource_hash'];
                 break;
             case 'touch':
-                /** @var Delete $command */
+                /** @var Touch $command */
                 $params = iterator_to_array($command);
-                $base = $params['resource_hash'];
+                $base = $params['resource_hash'].'/touch';
                 break;
         }
 
