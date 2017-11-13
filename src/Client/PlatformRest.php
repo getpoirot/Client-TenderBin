@@ -109,6 +109,23 @@ class PlatformRest
     }
 
     /**
+     * @param Command\ListMetaInfo $command
+     * @return iResponse
+     */
+    protected function _ListMetaInfo(Command\ListMetaInfo $command)
+    {
+        $headers = [];
+
+        // Request With Client Credential
+        // As Authorization Header
+        $headers['Authorization'] = 'Bearer '. ( $command->getToken()->getAccessToken() );
+
+        $url = $this->_getServerUrlEndpoints($command);
+        $response = $this->_sendViaCurl('POST', $url, ['hashes' => $command->getHashes()], $headers);
+        return $response;
+    }
+
+    /**
      * @param Command\Fetch $command
      * @return iResponse
      */

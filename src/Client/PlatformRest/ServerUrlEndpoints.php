@@ -5,6 +5,7 @@ use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\OAuth2Client\Federation\Command\Recover\Validate;
 use Poirot\TenderBinClient\Client\Command\Delete;
 use Poirot\TenderBinClient\Client\Command\Fetch;
+use Poirot\TenderBinClient\Client\Command\ListMetaInfo;
 use Poirot\TenderBinClient\Client\Command\MetaInfo;
 use Poirot\TenderBinClient\Client\Command\Store;
 use Poirot\TenderBinClient\Client\Command\Touch;
@@ -53,27 +54,31 @@ class ServerUrlEndpoints
             case 'store':
                 /** @var Store $command */
                 $params = iterator_to_array($command);
-                $base = isset($params['resource_hash']) ? $params['resource_hash'] : '';
+                $base   = isset($params['resource_hash']) ? $params['resource_hash'] : '';
                 break;
             case 'fetch':
                 /** @var Fetch $command */
                 $params = iterator_to_array($command);
-                $base = $params['resource_hash'];
+                $base   = $params['resource_hash'];
+                break;
+            case 'listmetainfo':
+                /** @var ListMetaInfo $command */
+                $base   = '/bunch/meta';
                 break;
             case 'metainfo':
                 /** @var MetaInfo $command */
                 $params = iterator_to_array($command);
-                $base = $params['resource_hash'].'/_/meta';
+                $base   = $params['resource_hash'].'/_/meta';
                 break;
             case 'delete':
                 /** @var Delete $command */
                 $params = iterator_to_array($command);
-                $base = $params['resource_hash'];
+                $base   = $params['resource_hash'];
                 break;
             case 'touch':
                 /** @var Touch $command */
                 $params = iterator_to_array($command);
-                $base = $params['resource_hash'].'/touch';
+                $base   = $params['resource_hash'].'/touch';
                 break;
         }
 

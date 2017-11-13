@@ -146,6 +146,24 @@ class Client
     }
 
     /**
+     * List metadata of given bin hashes
+     *
+     * @param array $resourceHashes
+     *
+     * @return array
+     */
+    function listBinMeta(array $resourceHashes)
+    {
+        $response = $this->call( new Command\ListMetaInfo($resourceHashes) );
+        if ( $ex = $response->hasException() )
+            throw $ex;
+
+        $r = $response->expected();
+        $r = ($r instanceof iDataEntity) ? $r->get('result') : $r;
+        return $r;
+    }
+
+    /**
      * Load BinData Content Into Local Stream
      *
      * [code:]
