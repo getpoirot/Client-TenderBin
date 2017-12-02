@@ -7,4 +7,14 @@ class MediaObjectTenderBin
 {
     const TYPE = 'tenderbin';
 
+
+    /**
+     * Generate Http Link To Media
+     *
+     * @return string
+     */
+    function getLink()
+    {
+        throw new \RuntimeException('Not Implemented.');
+    }
 }

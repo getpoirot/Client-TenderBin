@@ -1,7 +1,7 @@
 <?php
 namespace Module\TenderBinClient
 {
-
+    use Module\TenderBinClient\Handler\HandleTenderBin;
     use Poirot\Application\ModuleManager\Interfaces\iModuleManager;
     use Poirot\Std\Interfaces\Struct\iDataEntity;
     use Poirot\Application\Interfaces\Sapi;
@@ -10,14 +10,27 @@ namespace Module\TenderBinClient
     use Poirot\Loader\Autoloader\LoaderAutoloadAggregate;
     use Poirot\Loader\Autoloader\LoaderAutoloadNamespace;
     use Poirot\Loader\Interfaces\iLoaderAutoload;
+    use Poirot\TenderBinClient\FactoryMediaObject;
 
 
     class Module implements Sapi\iSapiModule
+        , Sapi\Module\Feature\iFeatureModuleInitSapi
         , Sapi\Module\Feature\iFeatureModuleAutoload
         , Sapi\Module\Feature\iFeatureModuleInitModuleManager
         , Sapi\Module\Feature\iFeatureModuleMergeConfig
         , Sapi\Module\Feature\iFeatureModuleNestServices
     {
+        /**
+         * @inheritdoc
+         */
+        function initialize($sapi)
+        {
+            // Add Media TenderBin Handler
+            //
+            FactoryMediaObject::addHandler( new HandleTenderBin );
+
+        }
+
         /**
          * Register class autoload on Autoload
          *

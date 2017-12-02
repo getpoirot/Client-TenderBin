@@ -1,10 +1,13 @@
 <?php
 namespace Poirot\TenderBinClient
 {
+
+    use Module\TenderBinClient\Interfaces\iMediaHandler;
     use Poirot\Std\Interfaces\Pact\ipFactory;
     use Poirot\Std\Type\StdArray;
     use Poirot\Std\Type\StdTravers;
     use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
+    use Poirot\TenderBinClient\Model\aMediaObject;
     use Poirot\TenderBinClient\Model\MediaObjectTenderBin;
 
 
@@ -46,12 +49,14 @@ namespace Poirot\TenderBinClient
     /**
      * Embed Retrieval Http Link To MediaObjects
      *
-     * @param array|\Traversable $content Content include MediaObject
+     * @param array|\Traversable $content   Content include MediaObject
+     * @param callable           $withMedia Functor called with media data object
+     *                           function(array $contentInclude_link)
      *
      * @return array Prepared content include link(s)
      * @throws \Exception
      */
-    function embedLinkToMediaData($content)
+    function embedLinkToMediaData($content, $withMedia = null)
     {
         if ($content instanceof \Traversable )
             $content = StdTravers::of($content)->toArray();
@@ -61,35 +66,36 @@ namespace Poirot\TenderBinClient
 
 
         $content = StdArray::of($content)->withWalk(function(&$val) {
-            if (!$val instanceof MediaObjectTenderBin )
+            if (! $val instanceof aMediaObject )
                 return;
 
             $orig         = $val;
             $val          = StdTravers::of($val)->toArray();
-            $val['_link'] = (string) \Module\Foundation\Actions::Path(
-                'tenderbin-media_cdn' // this name is reserved; @see mod-content.conf.php
-                , [
-                    'hash' => $orig->getHash()
-                ]
-            );
+            $val['_link'] = $orig->getLink();
         });
 
-        return $content->value; // instance access to internal array
+
+        // instance access to internal array
+        return ($withMedia) ? $withMedia($content->value) : $content->value;
     }
 
 
     class FactoryMediaObject
         implements ipFactory
     {
+        protected static $handlers = [];
+
+
         /**
          * Factory With Valuable Parameter
          *
-         * @param null  $mediaData
+         * @param null   $mediaData
+         * @param string $storageType
          *
          * @return MediaObjectTenderBin
          * @throws \Exception
          */
-        static function of($mediaData = null)
+        static function of($mediaData = null, $storageType = 'tenderbin')
         {
             // Content Object May Fetch From DB Or Sent By Post Http Request
 
@@ -106,9 +112,18 @@ namespace Poirot\TenderBinClient
 
 
             if (! isset($mediaData['storage_type']) )
-                $mediaData['storage_type'] = 'tenderbin';
+                $mediaData['storage_type'] = ($storageType) ? $storageType : 'tenderbin';
 
-            switch (strtolower($mediaData['storage_type'])) {
+
+            $storageType = static::_normalizeHandlerName($mediaData['storage_type']);
+
+            ## Registered Handler
+            #
+            if ( $handler = static::hasHandlerOfStorage($storageType) )
+                return $handler->newMediaObject($mediaData);
+
+
+            switch ($storageType) {
                 case 'tenderbin':
                     $objectMedia = new MediaObjectTenderBin;
                     $objectMedia->with( $objectMedia::parseWith($mediaData) );
@@ -118,7 +133,47 @@ namespace Poirot\TenderBinClient
                     throw new \Exception('Object Storage With Name (%s) Is Unknown.');
             }
 
+
             return $objectMedia;
+        }
+
+
+        /**
+         * Add new Handler Media Object
+         *
+         * @param iMediaHandler $handler
+         */
+        static function addHandler(iMediaHandler $handler)
+        {
+            static::$handlers[] = $handler;
+        }
+
+        /**
+         * Handler
+         *
+         * @param string $storageType
+         *
+         * @return iMediaHandler|false
+         */
+        static function hasHandlerOfStorage($storageType)
+        {
+            $storageType = static::_normalizeHandlerName($storageType);
+
+            /** @var iMediaHandler $handler */
+            foreach (static::$handlers as $handler) {
+                if ( $handler->canHandleMedia($storageType) )
+                    return $handler;
+            }
+
+            return false;
+        }
+
+
+        // ..
+
+        protected static function _normalizeHandlerName($handlerName)
+        {
+            return strtolower($handlerName);
         }
     }
 }

@@ -1,17 +1,27 @@
 <?php
 namespace Poirot\TenderBinClient\Model;
 
+use Module\Content\Interfaces\Model\Entity\iEntityMediaObject;
 use Poirot\Std\Struct\aValueObject;
 
 
-class aMediaObject
+abstract class aMediaObject
     extends aValueObject
+    implements iEntityMediaObject
 {
     const TYPE = 'not_known';
 
     /** @var array */
     protected $hash;
     protected $contentType;
+
+
+    /**
+     * Generate Http Link To Media
+     *
+     * @return string
+     */
+    abstract function getLink();
 
 
     /**
