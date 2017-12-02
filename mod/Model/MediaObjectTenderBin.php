@@ -8,9 +8,11 @@ class MediaObjectTenderBin
     /**
      * Generate Http Link To Media
      *
+     * @ignore
+     *
      * @return string
      */
-    function getLink()
+    function get_Link()
     {
         return (string) \Module\Foundation\Actions::Path(
             'tenderbin-media_cdn' // this name is reserved; @see mod-content.conf.php

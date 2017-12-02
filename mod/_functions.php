@@ -58,6 +58,10 @@ namespace Poirot\TenderBinClient
      */
     function embedLinkToMediaData($content, $withMedia = null)
     {
+        if ($content instanceof StdArray)
+            $content = $content->value;
+
+
         if ($content instanceof \Traversable )
             $content = StdTravers::of($content)->toArray();
 
@@ -65,18 +69,20 @@ namespace Poirot\TenderBinClient
             throw new \Exception('Medias is not an type of array.');
 
 
-        $content = StdArray::of($content)->withWalk(function(&$val) {
+        $content = StdArray::of($content)->withWalk(function(&$val) use ($withMedia) {
             if (! $val instanceof aMediaObject )
                 return;
 
             $orig         = $val;
             $val          = StdTravers::of($val)->toArray();
-            $val['_link'] = $orig->getLink();
+            $val['_link'] = $orig->get_Link();
+
+            if ($withMedia)
+                $val = $withMedia($val);
         });
 
-
         // instance access to internal array
-        return ($withMedia) ? $withMedia($content->value) : $content->value;
+        return $content->value;
     }
 
 

@@ -11,9 +11,11 @@ class MediaObjectTenderBin
     /**
      * Generate Http Link To Media
      *
+     * @ignore
+     *
      * @return string
      */
-    function getLink()
+    function get_Link()
     {
         throw new \RuntimeException('Not Implemented.');
     }
