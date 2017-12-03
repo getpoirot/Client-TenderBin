@@ -2,6 +2,8 @@
 namespace Poirot\TenderBinClient
 {
 
+    use Module\Content\Actions\UploadMediaAction;
+    use Module\Profile\Actions\UploadAvatarAction;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
     use Poirot\Std\Interfaces\Pact\ipFactory;
     use Poirot\Std\Type\StdArray;
@@ -77,8 +79,13 @@ namespace Poirot\TenderBinClient
             $val          = StdTravers::of($val)->toArray();
             $val['_link'] = $orig->get_Link();
 
-            if ($withMedia)
-                $val = $withMedia($val);
+            if ($withMedia) {
+                if ( null === $val = $withMedia($val) )
+                    throw new \RuntimeException(sprintf(
+                        'Functor given for media while Embed Link return NULL.'
+                    ));
+
+            }
         });
 
         // instance access to internal array
@@ -101,7 +108,7 @@ namespace Poirot\TenderBinClient
          * @return MediaObjectTenderBin
          * @throws \Exception
          */
-        static function of($mediaData = null, $storageType = 'tenderbin')
+        static function of($mediaData = null, $storageType = null)
         {
             // Content Object May Fetch From DB Or Sent By Post Http Request
 
@@ -118,7 +125,7 @@ namespace Poirot\TenderBinClient
 
 
             if (! isset($mediaData['storage_type']) )
-                $mediaData['storage_type'] = ($storageType) ? $storageType : 'tenderbin';
+                $mediaData['storage_type'] = ($storageType) ? $storageType : UploadMediaAction::STORAGE_TYPE;
 
 
             $storageType = static::_normalizeHandlerName($mediaData['storage_type']);

@@ -39,7 +39,11 @@ abstract class aMediaObject
     final function setStorageType($storageType)
     {
         if ( $storageType !== $this->getStorageType() )
-            throw new \Exception(sprintf('Mismatch Storage Type (%s).', $storageType));
+            throw new \Exception(sprintf(
+                'Mismatch Storage Type (%s) For (%s).'
+                , $storageType
+                , $this->getStorageType()
+            ));
 
     }
 
