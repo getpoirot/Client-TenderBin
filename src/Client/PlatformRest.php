@@ -7,6 +7,9 @@ use Poirot\ApiClient\Exceptions\exHttpResponse;
 use Poirot\ApiClient\Interfaces\iPlatform;
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Interfaces\Response\iResponse;
+use Poirot\Http\Header\CollectionHeader;
+use Poirot\Http\Header\FactoryHttpHeader;
+use Poirot\Http\Interfaces\iHeader;
 use Poirot\Std\ErrorStack;
 use Poirot\Std\Type\StdArray;
 use Poirot\TenderBinClient\Client\PlatformRest\ServerUrlEndpoints;
@@ -42,10 +45,11 @@ class PlatformRest
 
         $args = iterator_to_array($command);
 
-        if ( is_resource($command->getContent()) ) {
+       if ( is_resource($command->getContent()) ) {
             // For now convert stream that considered file into uri and post content with curl
             $fMeta = stream_get_meta_data($command->getContent());
-            $args['content'] = new \CURLFile( $fMeta['uri'], mime_content_type($fMeta['uri']) );
+
+            $args['content'] = new \CURLFile( $fMeta['uri'], $this->_getMimeTypeFromResource($fMeta) );
         }
 
 
@@ -325,5 +329,33 @@ class PlatformRest
     protected function _handleError($e)
     {
 
+    }
+
+    private function _getMimeTypeFromResource (array $fileMetadata)
+    {
+        if ('http' == $fileMetadata['wrapper_type']) {
+            $headers = new CollectionHeader();
+            foreach ($fileMetadata['wrapper_data'] as $i => $h) {
+                if ($i === 0)
+                    // This is request Status Header (GET HTTP 1.1)
+                    continue;
+
+                 $headers->insert(FactoryHttpHeader::of($h));
+            }
+
+            if (! $headers->has('Content-Type') )
+                return '*/*';
+
+
+            // TODO render header(s) with related function of http
+            $value = '';
+            /** @var iHeader $h */
+            foreach ( $headers->get('Content-Type') as $h)
+                $value .= $h->renderValueLine();
+
+            return $value;
+        }
+
+        return mime_content_type($fileMetadata['uri']);
     }
 }
