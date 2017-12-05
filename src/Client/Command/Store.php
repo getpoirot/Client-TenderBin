@@ -19,6 +19,7 @@ class Store
     protected $meta = [];
     protected $protected;
     protected $expiration;
+    protected $version;
 
 
     /**
@@ -38,6 +39,7 @@ class Store
         , array $meta = []
         , $protected = true
         , $expiration = null
+        , array $version = null
     )
     {
         $this->content = $content;
@@ -46,6 +48,7 @@ class Store
         $this->meta = $meta;
         $this->protected = $protected;
         $this->expiration = $expiration;
+        $this->version = $version;
     }
 
 
@@ -97,6 +100,11 @@ class Store
     function getExpiration()
     {
         return $this->expiration;
+    }
+
+    function getVersion()
+    {
+        return $this->version;
     }
 
 
