@@ -103,6 +103,7 @@ class Client
      * @param array           $meta
      * @param int             $expiration    Timestamp
      * @param bool            $protected
+     * @param array           $version       ["tag" => "thumb", "subversion_of" => "#hash_id"]
      *
      * @return array
      */
@@ -113,9 +114,10 @@ class Client
         , array $meta = []
         , $expiration = null
         , $protected = true
+        , array $version = null
     ) {
         $response = $this->call(
-            new Command\Store($content, $content_type, $title, $meta, $protected, $expiration)
+            new Command\Store($content, $content_type, $title, $meta, $protected, $expiration, $version)
         );
 
         if ( $ex = $response->hasException() )
