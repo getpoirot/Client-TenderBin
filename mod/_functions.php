@@ -51,14 +51,14 @@ namespace Poirot\TenderBinClient
     /**
      * Embed Retrieval Http Link To MediaObjects
      *
-     * @param array|\Traversable $content   Content include MediaObject
-     * @param callable           $withMedia Functor called with media data object
+     * @param array|\Traversable $content         Content include MediaObject
+     * @param callable           $withMediaObject Functor called with media data object
      *                           function(array $contentInclude_link)
      *
      * @return array Prepared content include link(s)
      * @throws \Exception
      */
-    function embedLinkToMediaData($content, $withMedia = null)
+    function embedLinkToMediaData($content, $withMediaObject = null)
     {
         if ($content instanceof StdArray)
             $content = $content->value;
@@ -71,7 +71,7 @@ namespace Poirot\TenderBinClient
             throw new \Exception('Medias is not an type of array.');
 
 
-        $content = StdArray::of($content)->withWalk(function(&$val) use ($withMedia) {
+        $content = StdArray::of($content)->withWalk(function(&$val) use ($withMediaObject) {
             if (! $val instanceof aMediaObject )
                 return;
 
@@ -79,12 +79,16 @@ namespace Poirot\TenderBinClient
             $val          = StdTravers::of($val)->toArray();
             $val['_link'] = $orig->get_Link();
 
-            if ($withMedia) {
-                if ( null === $val = $withMedia($val) )
+            if ($withMediaObject) {
+                if ( null === $val = $withMediaObject($val) )
                     throw new \RuntimeException(sprintf(
                         'Functor given for media while Embed Link return NULL.'
                     ));
 
+                if (! is_array($val) )
+                    throw new \RuntimeException(sprintf(
+                        'Functor given for media while Embed Link return None Array Type.'
+                    ));
             }
         });
 
