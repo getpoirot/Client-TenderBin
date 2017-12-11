@@ -1,7 +1,5 @@
 <?php
-namespace Module\TenderBinClient\Model;
-
-use Poirot\TenderBinClient\Model\MediaObjectTenderBin;
+namespace Poirot\TenderBinClient\Model;
 
 
 class MediaObjectTenderBinVersions
