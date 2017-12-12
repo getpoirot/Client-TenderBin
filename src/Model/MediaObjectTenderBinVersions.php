@@ -2,13 +2,16 @@
 namespace Poirot\TenderBinClient\Model;
 
 
+use Poirot\Std\Hydrator\HydrateGetters;
+
+
 class MediaObjectTenderBinVersions
     extends MediaObjectTenderBin
 {
     /**
      * @var MediaObjectTenderBin
      */
-    private $mediaObject;
+    public $mediaObject;
 
     protected $vers;
 
@@ -25,6 +28,15 @@ class MediaObjectTenderBinVersions
         $this->vers = $vers;
     }
 
+    /**
+     * Determine Used Stored Engine Type
+     *
+     * @return string
+     */
+    function getStorageType()
+    {
+        return $this->mediaObject->getStorageType();
+    }
 
     function getHash()
     {
@@ -41,9 +53,12 @@ class MediaObjectTenderBinVersions
         $link = $this->mediaObject->get_Link();
 
         $r = [];
-        foreach ($this->vers as $ver) {
-            if ($ver == 'origin')
+        foreach ($this->vers as $ver)
+        {
+            if ($ver == 'origin') {
                 $r['origin'] = $link;
+                continue;
+            }
 
             $r[$ver] = $link."?ver=$ver";
         }

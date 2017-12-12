@@ -2,6 +2,7 @@
 namespace Poirot\TenderBinClient
 {
 
+    use Module\Apanaj\Storage\HandleIrTenderBin;
     use Module\Content\Actions\UploadMediaAction;
     use Module\Profile\Actions\UploadAvatarAction;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
@@ -100,6 +101,10 @@ namespace Poirot\TenderBinClient
     class FactoryMediaObject
         implements ipFactory
     {
+        // TODO ease access to default storage handler
+        const STORAGE_TYPE = HandleIrTenderBin::STORAGE_TYPE;
+
+
         protected static $handlers = [];
 
 
@@ -129,7 +134,7 @@ namespace Poirot\TenderBinClient
 
 
             if (! isset($mediaData['storage_type']) )
-                $mediaData['storage_type'] = ($storageType) ? $storageType : UploadMediaAction::STORAGE_TYPE;
+                $mediaData['storage_type'] = ($storageType) ? $storageType : self::STORAGE_TYPE;
 
 
             $storageType = static::_normalizeHandlerName($mediaData['storage_type']);
