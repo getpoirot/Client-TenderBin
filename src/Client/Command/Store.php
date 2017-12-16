@@ -3,6 +3,7 @@ namespace Poirot\TenderBinClient\Client\Command;
 
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Request\tCommandHelper;
+use Poirot\Psr7\UploadedFile;
 use Poirot\Std\Hydrator\HydrateGetters;
 
 
@@ -25,7 +26,7 @@ class Store
     /**
      * MetaInfo constructor.
      *
-     * @param string|resource $content
+     * @param string|resource|UploadedFile $content
      * @param string          $content_type
      * @param string          $title
      * @param array           $meta
@@ -55,7 +56,7 @@ class Store
     // Options:
 
     /**
-     * @return resource|string
+     * @return resource|string|UploadedFile
      */
     function getContent()
     {

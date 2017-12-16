@@ -47,11 +47,11 @@ class PlatformRest
 
        if ( is_resource($command->getContent()) ) {
             // For now convert stream that considered file into uri and post content with curl
-            $fMeta = stream_get_meta_data($command->getContent());
+            $fMeta = stream_get_meta_data( $command->getContent() );
 
             $args['content'] = new \CURLFile( $fMeta['uri'], $this->_getMimeTypeFromResource($fMeta) );
-        }
 
+        }
 
         $url = $this->_getServerUrlEndpoints($command);
         $response = $this->_sendViaCurl('POST', $url, $args, $headers);
