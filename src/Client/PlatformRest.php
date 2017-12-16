@@ -7,13 +7,19 @@ use Poirot\ApiClient\Exceptions\exHttpResponse;
 use Poirot\ApiClient\Interfaces\iPlatform;
 use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Interfaces\Response\iResponse;
+use Poirot\Connection\Http\ConnectionHttpSocket;
+use Poirot\Connection\Http\StreamFilter\DechunkFilter;
 use Poirot\Http\Header\CollectionHeader;
 use Poirot\Http\Header\FactoryHttpHeader;
 use Poirot\Http\HttpMessage\Request\StreamBodyMultiPart;
+use Poirot\Http\HttpRequest;
 use Poirot\Http\Interfaces\iHeader;
+use Poirot\Http\Psr\RequestBridgeInPsr;
 use Poirot\Psr7\UploadedFile;
 use Poirot\Std\ErrorStack;
 use Poirot\Std\Type\StdArray;
+use Poirot\Stream\Streamable\SLimitSegment;
+use Poirot\Stream\Streamable\STemporary;
 use Poirot\TenderBinClient\Client\PlatformRest\ServerUrlEndpoints;
 use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
 use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
@@ -324,11 +330,67 @@ class PlatformRest
 
     private function _sendViaStream($string, $url, $args, $headers)
     {
-        /** @var UploadedFile $file */
+        $stream = new ConnectionHttpSocket([
+            'server_address' => $url,
+            'time_out'       => 3000,
+        ]);
+
+
         $body = new StreamBodyMultiPart($args);
 
+        $request = new HttpRequest;
 
+        $request->setMethod('POST');
+
+        $request->headers()
+            ->insert(FactoryHttpHeader::of([
+                'Content-Type' => 'multipart/form-data; boundary='.$body->getBoundary()
+        ]));
+
+
+        $parsedUrl = parse_url($url);
+        $headers['Host'] = $parsedUrl['host'];
+        $headers['Content-Length'] = $body->getSize();
+        $headers['Accept'] = 'application/json';
+
+        $request->setTarget($parsedUrl['path']);
+
+        foreach ($headers as $h => $v)
+            $request->headers()
+                ->insert( FactoryHttpHeader::of([$h => $v]) );
+
+
+        $request = $request->setBody($body);
+
+        $expression = new RequestBridgeInPsr($request);
+
+        /** @var STemporary $res */
+        $res = $stream->send( $expression );
+
+        $headers = \Poirot\Connection\Http\readAndSkipHeaders($res);
+
+        $res->resource()->appendFilter(new DechunkFilter());
+        $body = $res->read();
+
+
+        $exception = null;
+        $cResponseCode = 200;
+        $cContentType  = 'application/json';
+        if ( false === $cResponse = json_decode($body, true) ) {
+            $cResponseCode = 500;
+            $exception = new exHttpResponse($body, $cResponseCode);
+        }
+
+        $response = new Response(
+            $body
+            , $cResponseCode
+            , ['content_type' => $cContentType]
+            , $exception
+        );
+
+        return $response;
     }
+
 
     protected function _getServerUrlEndpoints($command)
     {
@@ -372,5 +434,22 @@ class PlatformRest
         }
 
         return mime_content_type($fileMetadata['uri']);
+    }
+
+
+    function _expression()
+    {
+        return 'POST /bin HTTP/1.1'."\r\n"
+               .'Host: 127.0.0.1'."\r\n"
+               .'Accept: application/json'."\r\n"
+               .'Authorization: Bearer 471f2cc6d0d187f7c518'."\r\n"
+               .'Content-Length: 138'."\r\n"
+               .'Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'."\r\n"
+               . "\r\n"
+               .'------WebKitFormBoundary7MA4YWxkTrZu0gW'."\r\n"
+               .'Content-Disposition: form-data; name="title"'."\r\n\r\n"
+               .'Avatar'."\r\n"
+               .'------WebKitFormBoundary7MA4YWxkTrZu0gW--'
+            ;
     }
 }
