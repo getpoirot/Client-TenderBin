@@ -9,6 +9,7 @@ use Poirot\ApiClient\Interfaces\Request\iApiCommand;
 use Poirot\ApiClient\Interfaces\Response\iResponse;
 use Poirot\Http\Header\CollectionHeader;
 use Poirot\Http\Header\FactoryHttpHeader;
+use Poirot\Http\HttpMessage\Request\StreamBodyMultiPart;
 use Poirot\Http\Interfaces\iHeader;
 use Poirot\Psr7\UploadedFile;
 use Poirot\Std\ErrorStack;
@@ -47,19 +48,21 @@ class PlatformRest
         $args = iterator_to_array($command);
 
         $content = $command->getContent();
-       if ( is_resource($content) ) {
+        if ( is_resource($content) ) {
             // For now convert stream that considered file into uri and post content with curl
             $fMeta = stream_get_meta_data( $command->getContent() );
 
             $args['content'] = new \CURLFile( $fMeta['uri'], $this->_getMimeTypeFromResource($fMeta) );
 
-       } else if ($content instanceof UploadedFile) {
-           $args['content'] = new \CURLFile( $content->getTmpName(), $content->getClientMediaType() );
-       }
+           $url = $this->_getServerUrlEndpoints($command);
+           $response = $this->_sendViaCurl('POST', $url, $args, $headers);
 
-        $url = $this->_getServerUrlEndpoints($command);
-        $response = $this->_sendViaCurl('POST', $url, $args, $headers);
-        return $response;
+        } else if ($content instanceof UploadedFile) {
+           $url = $this->_getServerUrlEndpoints($command);
+           $response = $this->_sendViaStream('POST', $url, $args, $headers);
+        }
+
+       return $response;
     }
 
     /**
@@ -317,6 +320,14 @@ class PlatformRest
         );
 
         return $response;
+    }
+
+    private function _sendViaStream($string, $url, $args, $headers)
+    {
+        /** @var UploadedFile $file */
+        $body = new StreamBodyMultiPart($args);
+
+
     }
 
     protected function _getServerUrlEndpoints($command)
