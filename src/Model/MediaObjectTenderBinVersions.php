@@ -60,6 +60,13 @@ class MediaObjectTenderBinVersions
                 continue;
             }
 
+            if ( is_array($ver) ) {
+                foreach ($ver['aliases'] as $alias => $of)
+                    $r[$alias] = $link."?ver=$of";
+
+                continue;
+            }
+
             $r[$ver] = $link."?ver=$ver";
         }
 
