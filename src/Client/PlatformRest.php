@@ -328,7 +328,7 @@ class PlatformRest
         return $response;
     }
 
-    private function _sendViaStream($string, $url, $args, $headers)
+    private function _sendViaStream($string, $url, $args, $head)
     {
         $stream = new ConnectionHttpSocket([
             'server_address' => $url,
@@ -349,13 +349,13 @@ class PlatformRest
 
 
         $parsedUrl = parse_url($url);
-        $headers['Host'] = $parsedUrl['host'];
-        $headers['Content-Length'] = $body->getSize();
-        $headers['Accept'] = 'application/json';
+        $head['Host'] = $parsedUrl['host'];
+        $head['Content-Length'] = $body->getSize();
+        $head['Accept'] = 'application/json';
 
         $request->setTarget($parsedUrl['path']);
 
-        foreach ($headers as $h => $v)
+        foreach ($head as $h => $v)
             $request->headers()
                 ->insert( FactoryHttpHeader::of([$h => $v]) );
 
@@ -367,16 +367,41 @@ class PlatformRest
         /** @var STemporary $res */
         $res = $stream->send( $expression );
 
-        $headers = \Poirot\Connection\Http\readAndSkipHeaders($res);
+        /*
+         * Array
+            (
+                [version] => 1.1
+                [status] => 200
+                [reason] => OK
+                [headers] => Array
+                    (
+                        [Cache-Control] => no-store, no-cache, must-revalidate
+                        [Content-Type] => application/json
+                        [Date] => Sun, 07 Jan 2018 11:45:55 GMT
+                        [Expires] => Thu, 19 Nov 1981 08:52:00 GMT
+                        [Pragma] => no-cache
+                        [Server] => Apache/2.4.10 (Debian)
+                        [Set-Cookie] => PHPSESSID=120fbf3ce4730785dfcde165d2f35a28; expires=Tue, 06-Feb-2018 11:45:57 GMT; Max-Age=2592000; path=/
+                        [Transfer-Encoding] => chunked
+                        [Vary] => Authorization
+                    )
 
-        $res->resource()->appendFilter(new DechunkFilter());
+            )
+        */
+        $head = \Poirot\Connection\Http\readAndSkipHeaders($res);
+        $head = \Poirot\Connection\Http\parseResponseHeaders($head);
+
+        if (isset($head['headers']['Transfer-Encoding']) && false !== strpos($head['headers']['Transfer-Encoding'], 'chunked'))
+            $res->resource()->appendFilter(new DechunkFilter());
+
+
         $body = $res->read();
-
 
         $exception = null;
         $cResponseCode = 200;
         $cContentType  = 'application/json';
-        if ( false === $cResponse = json_decode($body, true) ) {
+        $cResponse     = json_decode($body, true);
+        if ( false ===  $cResponse || null === $cResponse) {
             $cResponseCode = 500;
             $exception = new exHttpResponse($body, $cResponseCode);
         }
