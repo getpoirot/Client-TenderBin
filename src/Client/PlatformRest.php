@@ -18,7 +18,6 @@ use Poirot\Http\Psr\RequestBridgeInPsr;
 use Poirot\Psr7\UploadedFile;
 use Poirot\Std\ErrorStack;
 use Poirot\Std\Type\StdArray;
-use Poirot\Stream\Streamable\SLimitSegment;
 use Poirot\Stream\Streamable\STemporary;
 use Poirot\TenderBinClient\Client\PlatformRest\ServerUrlEndpoints;
 use Poirot\TenderBinClient\Exceptions\exResourceForbidden;
@@ -388,17 +387,25 @@ class PlatformRest
 
             )
         */
-        $head = \Poirot\Connection\Http\readAndSkipHeaders($res);
-        $head = \Poirot\Connection\Http\parseResponseHeaders($head);
+        $head   = \Poirot\Connection\Http\readAndSkipHeaders($res);
+        $status = \Poirot\Connection\Http\parseStatusLine($head);
+        $status = $status['status'];
+        $head   = \Poirot\Connection\Http\parseResponseHeaders($head);
 
         if (isset($head['headers']['Transfer-Encoding']) && false !== strpos($head['headers']['Transfer-Encoding'], 'chunked'))
             $res->resource()->appendFilter(new DechunkFilter());
 
-
         $body = $res->read();
+
 
         $exception = null;
         $cResponseCode = 200;
+
+        if ($status !== 200) {
+            $cResponseCode = $status;
+            $exception     = new exHttpResponse($body, $status);
+        }
+
         $cContentType  = 'application/json';
         $cResponse     = json_decode($body, true);
         if ( false ===  $cResponse || null === $cResponse) {

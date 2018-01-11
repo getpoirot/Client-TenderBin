@@ -2,8 +2,7 @@
 namespace Poirot\TenderBinClient\Model;
 
 
-use Poirot\Std\Hydrator\HydrateGetters;
-
+use Poirot\Std\Interfaces\Struct\iData;
 
 class MediaObjectTenderBinVersions
     extends MediaObjectTenderBin
@@ -46,6 +45,21 @@ class MediaObjectTenderBinVersions
     function getContentType()
     {
         return $this->mediaObject->getContentType();
+    }
+
+    /**
+     * Meta Information Of Bin
+     *
+     * @return iData
+     */
+    function getMeta()
+    {
+        $this->mediaObject->getMeta();
+    }
+
+    function addVersion($v, aMediaObject $media)
+    {
+        throw new \Exception('Not Allowed!!');
     }
 
     function get_Link()

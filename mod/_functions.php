@@ -3,8 +3,6 @@ namespace Poirot\TenderBinClient
 {
 
     use Module\Apanaj\Storage\HandleIrTenderBin;
-    use Module\Content\Actions\UploadMediaAction;
-    use Module\Profile\Actions\UploadAvatarAction;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
     use Poirot\Std\Interfaces\Pact\ipFactory;
     use Poirot\Std\Type\StdArray;
@@ -73,12 +71,11 @@ namespace Poirot\TenderBinClient
 
 
         $content = StdArray::of($content)->withWalk(function(&$val) use ($withMediaObject) {
+
             if (! $val instanceof aMediaObject )
                 return;
 
-            $orig         = $val;
-            $val          = StdTravers::of($val)->toArray();
-            $val['_link'] = $orig->get_Link();
+            $val = toResponseMediaObject($val);
 
             if ($withMediaObject) {
                 if ( null === $val = $withMediaObject($val) )
@@ -97,6 +94,33 @@ namespace Poirot\TenderBinClient
         return $content->value;
     }
 
+    function toResponseMediaObject(aMediaObject $val)
+    {
+        $orig         = $val;
+        $val          = [
+            'hash'         => $orig->getHash(),
+            'storage_type' => $orig->getStorageType(),
+            'content_type' => $orig->getContentType(),
+        ];
+
+        $meta = $orig->getMeta();
+        if (! empty($meta) ) {
+            $val['meta'] = StdTravers::of($meta)->toArray(function ($val) {
+                return empty($val);
+            });
+        }
+
+        $versions = $orig->getVersions();
+        if (! empty($versions) ) {
+            $val['versions'] = StdArray::of($versions)->withWalk(function (&$val){
+                $val = toResponseMediaObject($val);
+            });
+        }
+
+        $val['_link'] = $orig->get_Link();
+
+        return $val;
+    }
 
     class FactoryMediaObject
         implements ipFactory
