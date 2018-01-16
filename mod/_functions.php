@@ -1,10 +1,10 @@
 <?php
 namespace Poirot\TenderBinClient
 {
-
     use Module\Apanaj\Storage\HandleIrTenderBin;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
     use Poirot\Std\Interfaces\Pact\ipFactory;
+    use Poirot\Std\Struct\DataEntity;
     use Poirot\Std\Type\StdArray;
     use Poirot\Std\Type\StdTravers;
     use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
@@ -15,35 +15,80 @@ namespace Poirot\TenderBinClient
     /**
      * Magic Touch Media Contents To Infinite Expiration
      *
-     * @param \Traversable|array $content
+     * @param \Traversable $content
      *
      * @throws \Exception
      */
     function assertMediaContents($content)
     {
-        if (! $content instanceof \Traversable )
+        if (!($content instanceof \Traversable || is_array($content)))
             // Do Nothing!!
             return;
 
 
-        /** @var $cTender */
-        $cTender = \Module\TenderBinClient\Services::ClientTender();
+        foreach ($content as $c) {
+            if ($c instanceof aMediaObject) {
 
-        foreach ($content as $c)
-        {
-            if ($c instanceof MediaObjectTenderBin) {
+                $handler = FactoryMediaObject::hasHandlerOfStorage($c->getStorageType());
+
                 try {
-                    $cTender->touch( $c->getHash() );
+                    if ($handler)
+                    {
+                        // Touch Media Bin And Assert Content/Meta
+                        //
+                        /** @var DataEntity $r */
+                        $r = $handler->client()->touch( $c->getHash() );
+                        $r = $r->get('result');
+
+                        $meta        = $r['bindata']['meta'];
+                        $contentType = $r['bindata']['content_type'];
+
+                        $c->setMeta($meta);
+                        $c->setContentType($contentType);
+
+
+                        // Set Versions Available For This Media
+                        //
+                        $r = $handler->client()->getBinMeta($c->getHash());
+
+                        if (isset($r['versions']) && !empty($r['versions'])) {
+                            $versions = [];
+                            foreach ($r['versions'] as $vname => $values) {
+                                $uid = $values['bindata']['uid'];
+                                $versions[$vname] = $uid;
+                            }
+
+                            $r = $handler->client()->listBinMeta( array_values($versions) );
+
+                            // append to media object as version
+                            $storageType = $c->getStorageType();
+                            foreach ($versions as $vname => $hash)
+                            {
+                                $subVer = FactoryMediaObject::of(null, $storageType);
+                                $subVer->setHash($hash);
+                                $subVer->setMeta( $r[$hash] );
+
+                                $c->addVersion(
+                                    $vname
+                                    , $subVer
+                                );
+
+                            }
+                        }
+                    }
+
                 } catch (exResourceNotFound $e) {
                     // Specific Content Client Exception
+                    throw $e;
+
                 } catch (\Exception $e) {
                     // Other Errors Throw To Next Layer!
                     throw $e;
                 }
-            }
 
-            elseif (is_array($c) || $c instanceof \Traversable)
+            } elseif (is_array($c) || $c instanceof \Traversable) {
                 assertMediaContents($c);
+            }
         }
     }
 
