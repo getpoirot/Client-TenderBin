@@ -153,6 +153,9 @@ namespace Poirot\TenderBinClient
             $val['meta'] = StdTravers::of($meta)->toArray(function ($val) {
                 return empty($val);
             });
+
+            if (empty($val['meta']))
+                $val['meta'] = null;
         }
 
         $versions = $orig->getVersions();
