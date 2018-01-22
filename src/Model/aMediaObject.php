@@ -130,8 +130,10 @@ abstract class aMediaObject
      */
     function setVersions($versions)
     {
-        foreach ($versions as $v => $media)
-            $this->addVersion($v, $media);
+        if ($versions) {
+            foreach ($versions as $v => $media)
+                $this->addVersion($v, $media);
+        }
 
         return $this;
     }
