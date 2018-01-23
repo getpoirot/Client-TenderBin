@@ -2,7 +2,9 @@
 namespace Poirot\TenderBinClient
 {
     use Module\Apanaj\Storage\HandleIrTenderBin;
+    use Module\Content\Events\RetrieveContentResult\OnThatEmbedMediaLinks;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
+    use Module\xContent\Events\RetrieveContentResult\OnThatEmbedVideoMediaLinks;
     use Poirot\Std\Interfaces\Pact\ipFactory;
     use Poirot\Std\Struct\DataEntity;
     use Poirot\Std\Type\StdArray;
@@ -122,6 +124,7 @@ namespace Poirot\TenderBinClient
 
             $val = toResponseMediaObject($val);
 
+
             if ($withMediaObject) {
                 if ( null === $val = $withMediaObject($val) )
                     throw new \RuntimeException(sprintf(
@@ -139,6 +142,10 @@ namespace Poirot\TenderBinClient
         return $content->value;
     }
 
+    /**
+     * @see OnThatEmbedMediaLinks
+     * @see OnThatEmbedVideoMediaLinks
+     */
     function toResponseMediaObject(aMediaObject $val)
     {
         $orig         = $val;
