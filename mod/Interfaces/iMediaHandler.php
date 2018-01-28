@@ -19,11 +19,11 @@ interface iMediaHandler
     /**
      * Create new Media Object With Given Options
      *
-     * @param array $mediaOptions
+     * @param \Traversable $mediaOptions
      *
      * @return aMediaObject
      */
-    function newMediaObject(array $mediaOptions);
+    function newMediaObject($mediaOptions);
 
     /**
      * Client

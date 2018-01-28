@@ -5,12 +5,10 @@ use Poirot\Std\Interfaces\Struct\iData;
 use Poirot\Std\Struct\aValueObject;
 use Poirot\Std\Struct\DataEntity;
 use Poirot\TenderBinClient\FactoryMediaObject;
-use Module\Content\Interfaces\Model\Entity\iEntityMediaObject;
 
 
 abstract class aMediaObject
     extends aValueObject
-    implements iEntityMediaObject
 {
     const TYPE = 'not_known';
 
@@ -36,7 +34,7 @@ abstract class aMediaObject
      *
      * @return string
      */
-    function getStorageType()
+    final function getStorageType()
     {
         return static::TYPE;
     }

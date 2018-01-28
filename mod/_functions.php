@@ -2,10 +2,11 @@
 namespace Poirot\TenderBinClient
 {
     use Module\Apanaj\Storage\HandleIrTenderBin;
-    use Module\Content\Events\RetrieveContentResult\OnThatEmbedMediaLinks;
+    use Module\TenderBinClient\Handler\HandleTenderBin;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
-    use Module\xContent\Events\RetrieveContentResult\OnThatEmbedVideoMediaLinks;
+    use Poirot\Std\Exceptions\exImmutable;
     use Poirot\Std\Interfaces\Pact\ipFactory;
+    use Poirot\Std\Struct\CollectionPriority;
     use Poirot\Std\Struct\DataEntity;
     use Poirot\Std\Type\StdArray;
     use Poirot\Std\Type\StdTravers;
@@ -177,14 +178,18 @@ namespace Poirot\TenderBinClient
         return $val;
     }
 
+    if (! class_exists('\Module\Apanaj\Storage\HandleIrTenderBin', false) )
+        class_alias(HandleTenderBin::class, '\Module\Apanaj\Storage\HandleIrTenderBin');
+
+
     class FactoryMediaObject
         implements ipFactory
     {
-        // TODO ease access to default storage handler
-        const STORAGE_TYPE = HandleIrTenderBin::STORAGE_TYPE;
+        /** @var CollectionPriority  */
+        protected static $handlers;
+        /** @var iMediaHandler */
+        protected static $defaultHandler;
 
-
-        protected static $handlers = [];
 
 
         /**
@@ -213,16 +218,25 @@ namespace Poirot\TenderBinClient
 
 
             if (! isset($mediaData['storage_type']) )
-                $mediaData['storage_type'] = ($storageType) ? $storageType : self::STORAGE_TYPE;
+                $mediaData['storage_type'] = ($storageType)
+                    ? $storageType
+                    : null;
 
 
-            $storageType = static::_normalizeHandlerName($mediaData['storage_type']);
+
+            if (! isset($mediaData['storage_type']) )
+                $handler = self::getDefaultHandler();
+            else
+                $handler = static::hasHandlerOfStorage($storageType);
+
 
             ## Registered Handler
             #
-            if ( $handler = static::hasHandlerOfStorage($storageType) )
+            if ( $handler )
                 return $handler->newMediaObject($mediaData);
 
+
+            $storageType = static::_normalizeHandlerName($mediaData['storage_type']);
 
             switch ($storageType) {
                 case 'tenderbin':
@@ -243,10 +257,11 @@ namespace Poirot\TenderBinClient
          * Add new Handler Media Object
          *
          * @param iMediaHandler $handler
+         * @param int           $weight
          */
-        static function addHandler(iMediaHandler $handler)
+        static function addHandler(iMediaHandler $handler, $weight = 10)
         {
-            static::$handlers[] = $handler;
+            self::_getHandlersQueue()->insert($handler, $weight);
         }
 
         /**
@@ -261,12 +276,44 @@ namespace Poirot\TenderBinClient
             $storageType = static::_normalizeHandlerName($storageType);
 
             /** @var iMediaHandler $handler */
-            foreach (static::$handlers as $handler) {
+            foreach (clone self::_getHandlersQueue() as $handler) {
                 if ( $handler->canHandleMedia($storageType) )
                     return $handler;
             }
 
             return false;
+        }
+
+        /**
+         * Set Default Handler
+         *
+         * @param iMediaHandler $handler
+         */
+        static function setDefaultHandler(iMediaHandler $handler)
+        {
+            if (isset(self::$defaultHandler))
+                throw new exImmutable(sprintf(
+                    'Handler (%s) is take in place before.'
+                    , get_class(self::$defaultHandler)
+                ));
+
+
+            self::$defaultHandler = $handler;
+        }
+
+        /**
+         * Get Default Handler
+         *
+         * @return iMediaHandler
+         */
+        static function getDefaultHandler()
+        {
+            if ( isset(self::$defaultHandler) )
+                return self::$defaultHandler;
+
+
+            foreach (clone self::_getHandlersQueue() as $handler)
+                return $handler;
         }
 
 
@@ -275,6 +322,14 @@ namespace Poirot\TenderBinClient
         protected static function _normalizeHandlerName($handlerName)
         {
             return strtolower($handlerName);
+        }
+
+        private static function _getHandlersQueue()
+        {
+            if (!isset(self::$handlers))
+                self::$handlers = new CollectionPriority;
+
+            return self::$handlers;
         }
     }
 }

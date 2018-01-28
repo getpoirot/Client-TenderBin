@@ -10,6 +10,9 @@ use Poirot\TenderBinClient\Model\aMediaObject;
 class HandleTenderBin
     implements iMediaHandler
 {
+    const STORAGE_TYPE = 'tenderbin';
+
+
     /**
      * Handler Can Handle Media Object By Storage Type
      *
@@ -19,22 +22,24 @@ class HandleTenderBin
      */
     function canHandleMedia($storageType)
     {
-        return ($storageType == 'tenderbin');
+        return ($storageType == self::STORAGE_TYPE);
     }
 
     /**
      * Create new Media Object With Given Options
      *
-     * @param array $mediaOptions
+     * @param \Traversable $mediaOptions
      *
      * @return aMediaObject
      */
-    function newMediaObject(array $mediaOptions)
+    function newMediaObject($mediaOptions = null)
     {
         $objectMedia = new MediaObjectTenderBin;
-        $objectMedia->with( $objectMedia::parseWith($mediaOptions) );
+        if (! empty($mediaOptions) )
+            $objectMedia->with( $objectMedia::parseWith($mediaOptions) );
 
-        return$objectMedia;
+
+        return $objectMedia;
     }
 
     /**
