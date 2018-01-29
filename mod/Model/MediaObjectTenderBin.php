@@ -15,7 +15,7 @@ class MediaObjectTenderBin
     function get_Link()
     {
         return (string) \Module\Foundation\Actions::Path(
-            'tenderbin-media_cdn' // this name is reserved; @see mod-content.conf.php
+            'tenderbin-media_cdn' // this name is reserved; @see mod-tenderbin_client.conf.php
             , [
                 'hash' => $this->getHash()
             ]

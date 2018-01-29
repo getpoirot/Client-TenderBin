@@ -1,7 +1,6 @@
 <?php
 namespace Poirot\TenderBinClient\Model;
 
-
 use Poirot\Std\Interfaces\Struct\iData;
 
 class MediaObjectTenderBinVersions

@@ -1,8 +1,6 @@
 <?php
 namespace Poirot\TenderBinClient
 {
-    use Module\Apanaj\Storage\HandleIrTenderBin;
-    use Module\TenderBinClient\Handler\HandleTenderBin;
     use Module\TenderBinClient\Interfaces\iMediaHandler;
     use Poirot\Std\Exceptions\exImmutable;
     use Poirot\Std\Interfaces\Pact\ipFactory;
@@ -178,9 +176,6 @@ namespace Poirot\TenderBinClient
         return $val;
     }
 
-    if (! class_exists('\Module\Apanaj\Storage\HandleIrTenderBin', false) )
-        class_alias(HandleTenderBin::class, '\Module\Apanaj\Storage\HandleIrTenderBin');
-
 
     class FactoryMediaObject
         implements ipFactory
@@ -227,13 +222,15 @@ namespace Poirot\TenderBinClient
             if (! isset($mediaData['storage_type']) )
                 $handler = self::getDefaultHandler();
             else
-                $handler = static::hasHandlerOfStorage($storageType);
+                $handler = static::hasHandlerOfStorage($mediaData['storage_type']);
 
 
             ## Registered Handler
             #
-            if ( $handler )
+            if ( $handler ) {
+                $mediaData['storage_type'] = $handler->getType();
                 return $handler->newMediaObject($mediaData);
+            }
 
 
             $storageType = static::_normalizeHandlerName($mediaData['storage_type']);

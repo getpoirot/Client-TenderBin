@@ -34,7 +34,7 @@ abstract class aMediaObject
      *
      * @return string
      */
-    final function getStorageType()
+    function getStorageType()
     {
         return static::TYPE;
     }
