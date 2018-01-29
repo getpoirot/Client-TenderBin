@@ -31,4 +31,9 @@ interface iMediaHandler
      * @return Client
      */
     function client();
+
+    /**
+     * @return string
+     */
+    static function getType();
 }

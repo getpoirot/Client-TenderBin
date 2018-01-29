@@ -51,4 +51,9 @@ class HandleTenderBin
     {
         return $cTender = \Module\TenderBinClient\Services::ClientTender();
     }
+
+    static function getType()
+    {
+        return self::STORAGE_TYPE;
+    }
 }
