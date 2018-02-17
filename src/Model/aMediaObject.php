@@ -22,8 +22,6 @@ abstract class aMediaObject
     /**
      * Generate Http Link To Media
      *
-     * @ignore
-     *
      * @return string
      */
     abstract function get_Link();

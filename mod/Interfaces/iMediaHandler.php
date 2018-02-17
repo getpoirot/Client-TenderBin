@@ -35,5 +35,5 @@ interface iMediaHandler
     /**
      * @return string
      */
-    static function getType();
+    function getType();
 }

@@ -11,8 +11,6 @@ class MediaObjectTenderBin
     /**
      * Generate Http Link To Media
      *
-     * @ignore
-     *
      * @return string
      */
     function get_Link()
