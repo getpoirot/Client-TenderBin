@@ -38,7 +38,9 @@ namespace Poirot\TenderBinClient
                         // Touch Media Bin And Assert Content/Meta
                         //
                         /** @var DataEntity $r */
-                        $r = $handler->client()->touch( $c->getHash() );
+                        $r = \Poirot\Std\reTry(function () use($handler, $c) {
+                            return $handler->client()->touch( $c->getHash() );
+                        });
                         $r = $r->get('result');
 
                         $meta        = $r['bindata']['meta'];
