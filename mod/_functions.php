@@ -244,7 +244,10 @@ namespace Poirot\TenderBinClient
                     break;
 
                 default:
-                    throw new \Exception('Object Storage With Name (%s) Is Unknown.');
+                    throw new \Exception(sprintf(
+                        'Object Storage With Name (%s) Is Unknown.'
+                        , $storageType
+                    ));
             }
 
 
