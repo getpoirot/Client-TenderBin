@@ -12,6 +12,8 @@ class MediaObjectTenderBin
      */
     function get_Link()
     {
+        // TODO include filename
+
         return (string) \Module\Foundation\Actions::Path(
             'tenderbin-media_cdn' // this name is reserved; @see mod-tenderbin_client.conf.php
             , [
