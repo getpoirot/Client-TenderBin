@@ -349,7 +349,7 @@ class PlatformRest
 
 
         $parsedUrl = parse_url($url);
-        $head['Host'] = $parsedUrl['host'];
+        $head['Host'] = (isset($parsedUrl['host'])) ? $parsedUrl['host'] : '';
         $head['Content-Length'] = $body->getSize();
         $head['Accept'] = 'application/json';
 

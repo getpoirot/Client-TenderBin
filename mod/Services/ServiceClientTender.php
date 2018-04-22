@@ -22,16 +22,23 @@ class ServiceClientTender
      * Create Service
      *
      * @return Client
+     * @throws \Exception
      */
     function newService()
     {
         $serverUrl = $this->serverUrl;
 
+        if ( empty($serverUrl) )
+            throw new \Exception('Server Url For Client Tenderbin Not Set.');
+
         /** @var \Poirot\OAuth2Client\Client $oauthClient */
         $oauthClient = $this->services()->get('/module/OAuth2Client/services/OAuthClient');
         $c = new Client(
             $serverUrl
-            , new TokenFromOAuthClient($oauthClient, $oauthClient->withGrant(GrantPlugins::CLIENT_CREDENTIALS) )
+            , new TokenFromOAuthClient(
+                $oauthClient
+                , $oauthClient->withGrant(GrantPlugins::CLIENT_CREDENTIALS, ['scopes' => ['tenderbin']])
+            )
         );
 
         return $c;
