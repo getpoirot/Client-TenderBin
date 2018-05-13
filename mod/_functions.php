@@ -30,7 +30,7 @@ namespace Poirot\TenderBinClient
         foreach ($content as $c) {
             if ($c instanceof aMediaObject) {
 
-                $handler = FactoryMediaObject::hasHandlerOfStorage($c->getStorageType());
+                $handler = FactoryMediaObject::hasHandlerOfStorage( $c->getStorageType() );
 
                 try {
                     if ($handler)
@@ -52,9 +52,9 @@ namespace Poirot\TenderBinClient
 
                         // Set Versions Available For This Media
                         //
-                        $r = $handler->client()->getBinMeta($c->getHash());
+                        $r = $handler->client()->getBinMeta( $c->getHash() );
 
-                        if (isset($r['versions']) && !empty($r['versions'])) {
+                        if ( isset($r['versions']) && !empty($r['versions']) ) {
                             $versions = [];
                             foreach ($r['versions'] as $vname => $values) {
                                 $uid = $values['bindata']['uid'];
