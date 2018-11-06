@@ -1,13 +1,15 @@
 <?php
 namespace Poirot\TenderBinClient
 {
-    use Module\TenderBinClient\Interfaces\iMediaHandler;
     use Poirot\Std\Exceptions\exImmutable;
     use Poirot\Std\Interfaces\Pact\ipFactory;
     use Poirot\Std\Struct\CollectionPriority;
     use Poirot\Std\Struct\DataEntity;
     use Poirot\Std\Type\StdArray;
     use Poirot\Std\Type\StdTravers;
+
+    use Module\TenderBinClient\Interfaces\iMediaHandler;
+
     use Poirot\TenderBinClient\Exceptions\exResourceNotFound;
     use Poirot\TenderBinClient\Model\aMediaObject;
     use Poirot\TenderBinClient\Model\MediaObjectTenderBin;
@@ -17,10 +19,11 @@ namespace Poirot\TenderBinClient
      * Magic Touch Media Contents To Infinite Expiration
      *
      * @param \Traversable $content
+     * @param array        $metaRequired
      *
      * @throws \Exception
      */
-    function assertMediaContents($content)
+    function assertMediaContents($content, array $metaRequired = null)
     {
         if (!($content instanceof \Traversable || is_array($content)))
             // Do Nothing!!
@@ -35,6 +38,22 @@ namespace Poirot\TenderBinClient
                 try {
                     if ($handler)
                     {
+                        $rMeta = $handler->client()->getBinMeta( $c->getHash() );
+                        $meta  = $rMeta['bindata']['meta'];
+
+
+                        // Check for meta requirements
+                        //
+                        if (
+                            $metaRequired !== null
+                            && ( count($metaRequired) != count(array_intersect($metaRequired, $meta)) )
+                        )
+                            throw new \InvalidArgumentException(sprintf(
+                                'Mismatch required meta bin for: (%s).'
+                                , \Poirot\Std\flatten($metaRequired)
+                            ));
+
+
                         // Touch Media Bin And Assert Content/Meta
                         //
                         /** @var DataEntity $r */
@@ -49,14 +68,11 @@ namespace Poirot\TenderBinClient
                         $c->setMeta($meta);
                         $c->setContentType($contentType);
 
-
                         // Set Versions Available For This Media
                         //
-                        $r = $handler->client()->getBinMeta( $c->getHash() );
-
-                        if ( isset($r['versions']) && !empty($r['versions']) ) {
+                        if ( isset($rMeta['versions']) && !empty($rMeta['versions']) ) {
                             $versions = [];
-                            foreach ($r['versions'] as $vname => $values) {
+                            foreach ($rMeta['versions'] as $vname => $values) {
                                 $uid = $values['bindata']['uid'];
                                 $versions[$vname] = $uid;
                             }
