@@ -4,6 +4,7 @@ namespace Poirot\TenderBinClient\Model;
 use Poirot\Std\Interfaces\Struct\iData;
 use Poirot\Std\Struct\aValueObject;
 use Poirot\Std\Struct\DataEntity;
+
 use Poirot\TenderBinClient\FactoryMediaObject;
 
 
@@ -107,7 +108,7 @@ abstract class aMediaObject
     /**
      * Meta Information Of Bin
      *
-     * @return iData
+     * @return DataEntity|iData
      */
     function getMeta()
     {

@@ -12,13 +12,17 @@ class MediaObjectTenderBin
      */
     function get_Link()
     {
-        // TODO include filename
-
-        return (string) \Module\Foundation\Actions::Path(
+        $link = (string) \Module\Foundation\Actions::path(
             'tenderbin-media_cdn' // this name is reserved; @see mod-tenderbin_client.conf.php
             , [
                 'hash' => $this->getHash()
             ]
         );
+
+        if (! $filename = $this->getMeta()->get('filename') )
+            return $link;
+
+
+        return sprintf(rtrim($link, '/').'/%s', $filename);
     }
 }

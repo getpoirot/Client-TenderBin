@@ -227,7 +227,7 @@ namespace Poirot\TenderBinClient
             */
 
             if ($mediaData instanceof \Traversable)
-                $mediaData = iterator_to_array($mediaData);
+                $mediaData = StdTravers::of($mediaData)->toArray(null, true);
 
 
             if (! isset($mediaData['storage_type']) )
@@ -241,6 +241,7 @@ namespace Poirot\TenderBinClient
                 $handler = self::getDefaultHandler();
             else
                 $handler = static::hasHandlerOfStorage($mediaData['storage_type']);
+
 
 
             ## Registered Handler
